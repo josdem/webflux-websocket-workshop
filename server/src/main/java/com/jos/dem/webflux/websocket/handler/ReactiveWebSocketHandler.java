@@ -23,23 +23,23 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
   private static final ObjectMapper json = new ObjectMapper();
 
   private Flux<String> eventFlux = Flux.generate(sink -> {
-        Event event = new Event(randomUUID().toString(), now().toString());
-        try {
-            sink.next(json.writeValueAsString(event));
-        } catch (JsonProcessingException e) {
-            sink.error(e);
-        }
-    });
+    Event event = new Event(randomUUID().toString(), now().toString());
+    try {
+      sink.next(json.writeValueAsString(event));
+    } catch (JsonProcessingException e) {
+      sink.error(e);
+    }
+  });
 
   private Flux<String> intervalFlux = Flux.interval(Duration.ofMillis(1000L))
-      .zipWith(eventFlux, (time, event) -> event);
+    .zipWith(eventFlux, (time, event) -> event);
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
     return session.send(intervalFlux
-            .map(session::textMessage))
-            .and(session.receive()
-              .map(WebSocketMessage::getPayloadAsText)
-              .log());
+        .map(session::textMessage))
+      .and(session.receive()
+          .map(WebSocketMessage::getPayloadAsText)
+          .log());
   }
 }
