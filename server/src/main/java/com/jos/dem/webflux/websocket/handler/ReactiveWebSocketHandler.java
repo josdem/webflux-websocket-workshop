@@ -1,45 +1,31 @@
 package com.jos.dem.webflux.websocket.handler;
 
-import java.time.Duration;
-
-import static java.time.LocalDateTime.now;
-import static java.util.UUID.randomUUID;
-
+import com.jos.dem.webflux.websocket.util.MessageGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
-import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.jos.dem.webflux.websocket.model.Event;
+import java.time.Duration;
+import java.time.Instant;
 
 @Component
 public class ReactiveWebSocketHandler implements WebSocketHandler {
 
-  private static final ObjectMapper json = new ObjectMapper();
+  @Autowired
+  private MessageGenerator messageGenerator;
 
-  private Flux<String> eventFlux = Flux.generate(sink -> {
-    Event event = new Event(randomUUID().toString(), now().toString());
-    try {
-      sink.next(json.writeValueAsString(event));
-    } catch (JsonProcessingException e) {
-      sink.error(e);
-    }
-  });
-
-  private Flux<String> intervalFlux = Flux.interval(Duration.ofMillis(1000L))
-    .zipWith(eventFlux, (time, event) -> event);
+  private Flux<String> intervalFlux =
+      Flux.interval(Duration.ofSeconds(1))
+          .map(it -> messageGenerator.generate());
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
-    return session.send(intervalFlux
-        .map(session::textMessage))
-      .and(session.receive()
-          .map(WebSocketMessage::getPayloadAsText)
-          .log());
+    return session
+        .send(intervalFlux.map(session::textMessage))
+        .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
   }
 }
