@@ -1,6 +1,8 @@
 package com.jos.dem.webflux.websocket;
 
-import com.jos.dem.webflux.websocket.handler.EchoHandler;
+import com.jos.dem.webflux.websocket.handler.ReactiveWebSocketHandler;
+import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import org.springframework.web.reactive.socket.server.upgrade.ReactorNettyReques
 public class WebsocketApplication {
 
   @Autowired
-  private EchoHandler echoHandler;
+  private WebSocketHandler webSocketHandler;
 
   public static void main(String[] args) {
     SpringApplication.run(WebsocketApplication.class, args);
@@ -29,21 +31,17 @@ public class WebsocketApplication {
   @Bean
   public HandlerMapping handlerMapping() {
     Map<String, WebSocketHandler> map = new HashMap<>();
-    map.put("echo", echoHandler);
+    map.put("/channel", webSocketHandler);
 
     SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
-    mapping.setUrlMap(map);
     mapping.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    mapping.setUrlMap(map);
     return mapping;
   }
 
   @Bean
   public WebSocketHandlerAdapter handlerAdapter() {
-    return new WebSocketHandlerAdapter(webSocketService());
+    return new WebSocketHandlerAdapter();
   }
 
-  @Bean
-  public WebSocketService webSocketService() {
-    return new HandshakeWebSocketService(new ReactorNettyRequestUpgradeStrategy());
-  }
 }

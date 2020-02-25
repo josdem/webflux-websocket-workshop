@@ -27,7 +27,7 @@ public class WebsocketClientApplication {
 	CommandLineRunner run(WebSocketClient client){
 		return args -> {
 			client.execute(
-					URI.create("ws://localhost:8080/"),
+					URI.create("ws://localhost:8080/channel"),
 			session -> session.send(
 					Mono.just(session.textMessage("event")))
 					.thenMany(session.receive()
