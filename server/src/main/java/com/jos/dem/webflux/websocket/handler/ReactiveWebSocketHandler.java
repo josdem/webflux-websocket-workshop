@@ -15,12 +15,10 @@ import java.time.Instant;
 @Component
 public class ReactiveWebSocketHandler implements WebSocketHandler {
 
-  @Autowired
-  private MessageGenerator messageGenerator;
+  @Autowired private MessageGenerator messageGenerator;
 
   private Flux<String> intervalFlux =
-      Flux.interval(Duration.ofSeconds(1))
-          .map(it -> messageGenerator.generate());
+      Flux.interval(Duration.ofSeconds(1)).map(it -> messageGenerator.generate());
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
