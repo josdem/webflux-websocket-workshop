@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.jos.dem.webflux.websocket</groupId>
-	<artifactId>server</artifactId>
+	<artifactId>client</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<name>Spring Webflux WebSockets</name>
 	<description>This project shows how to use Websocket with Spring Webflux</description>
