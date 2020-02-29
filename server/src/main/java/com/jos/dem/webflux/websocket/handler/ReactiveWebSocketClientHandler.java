@@ -3,6 +3,7 @@ package com.jos.dem.webflux.websocket.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jos.dem.webflux.websocket.model.Event;
+import com.jos.dem.webflux.websocket.util.ApplicationState;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -20,7 +21,7 @@ public class ReactiveWebSocketClientHandler implements WebSocketHandler {
   public Mono<Void> handle(WebSocketSession session) {
     return session
         .send(Mono.just(session.textMessage(getEvent())))
-        .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
+        .and(session.receive().map(event -> ApplicationState.cache.add(event.getPayloadAsText())));
   }
 
   private String getEvent() {
