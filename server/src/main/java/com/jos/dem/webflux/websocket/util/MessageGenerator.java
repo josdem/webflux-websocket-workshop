@@ -14,7 +14,7 @@ public class MessageGenerator {
 
   private final Random random = new Random(messages.size());
 
-  public String generate(){
-      return messages.get(random.nextInt(messages.size()));
+  public String generate() {
+    return messages.get(random.nextInt(messages.size()));
   }
 }

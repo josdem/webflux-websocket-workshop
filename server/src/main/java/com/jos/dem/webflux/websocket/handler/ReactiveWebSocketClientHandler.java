@@ -14,17 +14,17 @@ import java.time.Instant;
 @Component
 public class ReactiveWebSocketClientHandler implements WebSocketHandler {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
-    @Override
-    public Mono<Void> handle(WebSocketSession session) {
-        return session
-                .send(Mono.just(session.textMessage(getEvent())))
-                .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
-    }
+  @Override
+  public Mono<Void> handle(WebSocketSession session) {
+    return session
+        .send(Mono.just(session.textMessage(getEvent())))
+        .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
+  }
 
-    private String getEvent(){
-        JsonNode node = mapper.valueToTree(new Event("start", Instant.now()));
-        return node.toString();
-    }
+  private String getEvent() {
+    JsonNode node = mapper.valueToTree(new Event("start", Instant.now()));
+    return node.toString();
+  }
 }
