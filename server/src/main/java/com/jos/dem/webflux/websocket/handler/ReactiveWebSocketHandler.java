@@ -26,7 +26,7 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
   @PostConstruct
   private void setup(){
     intervalFlux =
-        Flux.interval(Duration.ofSeconds(1)).map(it -> getEvent());
+        Flux.interval(Duration.ofSeconds(5)).map(it -> getEvent());
   }
 
   @Override

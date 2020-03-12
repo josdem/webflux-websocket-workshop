@@ -19,26 +19,30 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ReactiveWebSocketHandler implements WebSocketHandler {
 
-  private Flux<String> intervalFlux;
+  private Flux<String> emiterFlux;
+  private Flux<String> intervalNameFlux;
+  private Flux<String> intervalSilenceFlux;
   private final MessageGenerator messageGenerator;
   private final ObjectMapper mapper = new ObjectMapper();
 
   @PostConstruct
   private void setup(){
-    intervalFlux =
-        Flux.interval(Duration.ofSeconds(1)).map(it -> getEvent());
+    intervalNameFlux =
+        Flux.interval(Duration.ofSeconds(1)).map(it -> getSilence());
+    intervalSilenceFlux =
+        Flux.interval(Duration.ofSeconds(1)).map(it -> getStream());
+    emiterFlux = intervalNameFlux;
   }
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
     return session
-        .send(intervalFlux.map(session::textMessage))
-        .and(Mono.just(session.textMessage(getEvent())))
-        .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
+        .send(emiterFlux.map(session::textMessage))
+        .and(session.receive().map(message -> message.getPayloadAsText()).log());
   }
 
-  private String getEvent(){
-    JsonNode node = mapper.valueToTree(new Event("start", Instant.now()));
+  private String getSilence(){
+    JsonNode node = mapper.valueToTree(new Event("silence", Instant.now()));
     return node.toString();
   }
 
