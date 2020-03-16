@@ -31,35 +31,40 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
   @PostConstruct
-  private void setup(){
-    intervalSilenceFlux =
-        Flux.interval(Duration.ofSeconds(1)).map(it -> getSilence());
-    intervalNameFlux =
-        Flux.interval(Duration.ofSeconds(1)).map(it -> getStream());
+  private void setup() {
+    intervalSilenceFlux = Flux.interval(Duration.ofSeconds(1)).map(it -> getSilence());
+    intervalNameFlux = Flux.interval(Duration.ofSeconds(1)).map(it -> getStream());
   }
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
-    Mono<Void> send =
-        session
-          .send(Mono.just(session.textMessage(getSilence())));
-
     Flux<String> receive =
         session
             .receive()
             .map(message -> message.getPayloadAsText())
-            .doOnNext(textMessage -> log.info("message: {}", textMessage))
+            .doOnNext(
+                textMessage -> {
+                  log.info("message: {}", textMessage);
+                  if (textMessage.contains("Hola")) {
+                    log.info("Hola");
+                    Mono.fromRunnable(() -> send(session));
+                  }
+                })
             .doOnComplete(() -> log.info("complete"));
 
-    return send.thenMany(receive).then();
+    return send(session).thenMany(receive).then();
   }
 
-  private String getSilence(){
+  private Mono<Void> send(WebSocketSession session) {
+    return session.send(Mono.just(session.textMessage(getSilence())));
+  }
+
+  private String getSilence() {
     JsonNode node = mapper.valueToTree(new Event("silence", Instant.now()));
     return node.toString();
   }
 
-  private String getStream(){
+  private String getStream() {
     JsonNode node = mapper.valueToTree(new Event(messageGenerator.generate(), Instant.now()));
     return node.toString();
   }
