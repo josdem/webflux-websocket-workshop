@@ -29,7 +29,7 @@ public class ClientComponent implements ApplicationListener<ApplicationReadyEven
         Disposable logicOne = clientLogic.start(webSocketClient, URI.create("ws://localhost:8080/channel"), new ReactiveWebSocketHandler());
 
         Mono
-                .delay(Duration.ofSeconds(10))
+                .delay(Duration.ofSeconds(1000))
                 .doOnEach(value -> logicOne.dispose())
                 .map(value -> SpringApplication.exit(applicationContext, () -> 0))
                 .subscribe(exitValue -> System.exit(exitValue));

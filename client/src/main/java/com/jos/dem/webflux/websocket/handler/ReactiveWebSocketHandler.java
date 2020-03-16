@@ -11,7 +11,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 
 public class ReactiveWebSocketHandler implements WebSocketHandler {
@@ -22,8 +21,7 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
 
   private Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @PostConstruct
-  private void setup(){
+  public ReactiveWebSocketHandler(){
     sessionHandler = new WebSocketSessionHandler();
     connectedProcessor = ReplayProcessor.create();
   }
