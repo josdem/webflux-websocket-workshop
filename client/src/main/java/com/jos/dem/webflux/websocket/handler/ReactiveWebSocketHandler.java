@@ -33,7 +33,7 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
                 textMessage -> {
                   log.info("message: {}", textMessage);
                   if (textMessage.contains("Hola")) {
-                    Mono.fromRunnable(sendMessage()).subscribe();
+                    Mono.fromRunnable(sendMessage(session)).subscribe();
                   }
                 })
             .doOnComplete(() -> log.info("complete"));
@@ -41,8 +41,8 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
     return send.thenMany(receive).then();
   }
 
-  private Runnable sendMessage() {
-    return () -> log.info("Thread: {}", Thread.currentThread().getName());
+  private Runnable sendMessage(WebSocketSession session) {
+    return () -> session.send(Mono.just(session.textMessage(getMessage()))).subscribe();
   }
 
   private String getMessage() {
