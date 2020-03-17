@@ -23,7 +23,7 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
   @Override
   public Mono<Void> handle(WebSocketSession session) {
 
-    Mono<Void> send = session.send(Mono.just(session.textMessage(getMessage())));
+    Mono<Void> send = session.send(Mono.just(session.textMessage(getMessage("starting"))));
 
     Flux<String> receive =
         session
@@ -32,8 +32,10 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
             .doOnNext(
                 textMessage -> {
                   log.info("message: {}", textMessage);
-                  if (textMessage.contains("Hola")) {
-                    Mono.fromRunnable(sendMessage(session)).subscribe();
+                  if (textMessage.contains("Hello")) {
+                    Mono.fromRunnable(sendAudioMessage(session)).subscribe();
+                  } else {
+                    Mono.fromRunnable(sendSilenceMessage(session)).subscribe();
                   }
                 })
             .doOnComplete(() -> log.info("complete"));
@@ -41,12 +43,16 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
     return send.thenMany(receive).then();
   }
 
-  private Runnable sendMessage(WebSocketSession session) {
-    return () -> session.send(Mono.just(session.textMessage(getMessage()))).subscribe();
+  private Runnable sendAudioMessage(WebSocketSession session) {
+    return () -> session.send(Mono.just(session.textMessage(getMessage("audio")))).subscribe();
   }
 
-  private String getMessage() {
-    JsonNode node = mapper.valueToTree(new Event("silence", Instant.now()));
+  private Runnable sendSilenceMessage(WebSocketSession session) {
+    return () -> session.send(Mono.just(session.textMessage(getMessage("silence")))).subscribe();
+  }
+
+  private String getMessage(String message) {
+    JsonNode node = mapper.valueToTree(new Event(message, Instant.now()));
     return node.toString();
   }
 }
