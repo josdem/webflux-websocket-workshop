@@ -7,6 +7,7 @@ import com.jos.dem.webflux.websocket.util.MessageGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
+import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,12 +31,18 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
-    return session.send(
+    Mono<Void> receive = session.send(
         session
             .receive()
             .map(webSocketMessage -> webSocketMessage.getPayloadAsText())
             .log()
             .map(message -> session.textMessage(message)));
+
+    Mono<Void> send = session
+            .send(intervalFlux.map(session::textMessage))
+            .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
+
+    return receive.then(send);
   }
 
   private String getEvent() {
