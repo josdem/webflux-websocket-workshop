@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -24,23 +23,7 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
   public Mono<Void> handle(WebSocketSession session) {
 
     Mono<Void> send = session.send(Mono.just(session.textMessage(getMessage("starting"))));
-
-    Flux<String> receive =
-        session
-            .receive()
-            .map(message -> message.getPayloadAsText())
-            .doOnNext(
-                textMessage -> {
-                  log.info("message: {}", textMessage);
-                  if (textMessage.contains("Hello")) {
-                    Mono.fromRunnable(sendAudioMessage(session)).subscribe();
-                  } else {
-                    Mono.fromRunnable(sendSilenceMessage(session)).subscribe();
-                  }
-                })
-            .doOnComplete(() -> log.info("complete"));
-
-    return send.thenMany(receive).then();
+    return send;
   }
 
   private Runnable sendAudioMessage(WebSocketSession session) {
