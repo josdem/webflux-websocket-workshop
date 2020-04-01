@@ -3,8 +3,7 @@ package com.jos.dem.webflux.websocket.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jos.dem.webflux.websocket.model.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jos.dem.webflux.websocket.model.Person;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -15,18 +14,26 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class ReactiveWebSocketHandler implements WebSocketHandler {
 
-  private Flux<String> intervalFlux;
+  private Flux<Person> personStream;
   private final ObjectMapper mapper = new ObjectMapper();
-
-  private Logger log = LoggerFactory.getLogger(this.getClass());
 
   @PostConstruct
   private void setup() {
-    intervalFlux = Flux.interval(Duration.ofSeconds(2)).map(it -> getMessage("silence"));
+    List<Person> persons =
+        Arrays.asList(
+            new Person("josdem", "josdem@email.com"),
+            new Person("skye", "skye@email.com"),
+            new Person("tgrip", "tgrip@email.com"),
+            new Person("edzero", "edzero@email.com"),
+            new Person("jeduan", "jeduan@email.com"));
+
+    personStream = Flux.fromIterable(persons).delayElements(Duration.ofSeconds(1));
   }
 
   @Override
@@ -36,18 +43,10 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
 
     Mono<Void> sendMessages =
         session
-            .send(intervalFlux.map(session::textMessage))
+            .send(personStream.map(message -> session.textMessage(message.toString())))
             .and(session.receive().map(WebSocketMessage::getPayloadAsText).log());
 
     return send.then(sendMessages);
-  }
-
-  private Runnable sendAudioMessage(WebSocketSession session) {
-    return () -> session.send(Mono.just(session.textMessage(getMessage("audio")))).subscribe();
-  }
-
-  private Runnable sendSilenceMessage(WebSocketSession session) {
-    return () -> session.send(Mono.just(session.textMessage(getMessage("silence")))).subscribe();
   }
 
   private String getMessage(String message) {
