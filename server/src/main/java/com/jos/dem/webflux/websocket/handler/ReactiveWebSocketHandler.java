@@ -20,7 +20,7 @@ import java.time.Instant;
 public class ReactiveWebSocketHandler implements WebSocketHandler {
 
   private Flux<String> intervalFlux;
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper;
   private final MessageGenerator messageGenerator;
 
   @PostConstruct
