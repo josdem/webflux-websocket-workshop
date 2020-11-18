@@ -1,7 +1,6 @@
 package com.jos.dem.webflux.websocket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,10 +11,9 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+@Slf4j
 @SpringBootApplication
 public class WebsocketClientApplication {
-
-  private Logger log = LoggerFactory.getLogger(this.getClass());
 
   public static void main(String[] args) {
     SpringApplication.run(WebsocketClientApplication.class, args);

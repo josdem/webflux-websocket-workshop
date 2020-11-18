@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.4.RELEASE</version>
+		<version>2.4.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.jos.dem.webflux.websocket</groupId>
@@ -15,7 +15,7 @@
 	<description>This project shows how to use Websocket with Spring Webflux</description>
 
 	<properties>
-		<java.version>12</java.version>
+		<java.version>13</java.version>
 	</properties>
 
 	<dependencies>
